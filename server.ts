@@ -12,19 +12,21 @@ const DIST_FOLDER = join(process.cwd(), 'dist/browser');
 // webpack
 const {AppComponent, renderComponent} = require('./dist/server/main');
 
-// Do a sanity check on the output.
-(function test() {
+function render(): Document {
   const doc: Document = domino.createDocument('<app-root></app-root>');
   const rendererFactory = getRendererFactory(doc);
   renderComponent(AppComponent, {rendererFactory});
-  console.log(doc.documentElement.outerHTML);
+  return doc;
+}
+
+// Do a sanity check on the output.
+(function test() {
+  console.log(render().documentElement.outerHTML);
 })();
 
 // Time X iterations.
 console.time('timer');
 for (let i = 0; i < 10000; i++) {
-  const doc: Document = domino.createDocument('<app-root></app-root>');
-  const rendererFactory = getRendererFactory(doc);
-  renderComponent(AppComponent, {rendererFactory});
+  const output = render().documentElement.outerHTML;
 }
 console.timeEnd('timer');
