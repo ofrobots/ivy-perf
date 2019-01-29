@@ -10,12 +10,13 @@ const DIST_FOLDER = join(process.cwd(), 'dist/browser');
 
 // * NOTE :: leave this as require() since this file is built Dynamically from
 // webpack
-const {AppComponent, renderComponent} = require('./dist/server/main');
+const {AppComponent, renderComponent, DomSanitizerImpl} = require('./dist/server/main');
 
 function render(): Document {
   const doc: Document = domino.createDocument('<app-root></app-root>');
   const rendererFactory = getRendererFactory(doc);
-  renderComponent(AppComponent, {rendererFactory});
+  const sanitizer = new DomSanitizerImpl(doc);
+  renderComponent(AppComponent, {rendererFactory, sanitizer});
   return doc;
 }
 
