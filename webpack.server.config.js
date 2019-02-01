@@ -31,6 +31,16 @@ module.exports = {
     ]
   },
   plugins: [
+    new webpack.BannerPlugin({
+      banner:
+        "// Required for JavaScript engine shells.\n" +
+        "if (typeof global === 'undefined') global = this;\n" +
+        "if (typeof setInterval === 'undefined') setInterval = () => {};\n" +
+        "if (typeof clearInterval === 'undefined') clearInterval = () => {};\n" +
+        "if (typeof setTimeout === 'undefined') setTimeout = () => {};\n" +
+        "if (typeof clearTimeout === 'undefined') clearTimeout = () => {};\n",
+      raw: true
+    }),
     new webpack.ContextReplacementPlugin(
       // fixes WARNING Critical dependency: the request of a dependency is an expression
       /(.+)?angular(\\|\/)core(.+)?/,
