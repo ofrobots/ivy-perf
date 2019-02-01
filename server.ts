@@ -6,8 +6,6 @@ import {getRendererFactory} from './server_renderer_factory';
 // Faster server renders w/ Prod mode (dev mode never needed)
 (global as any).ngDevMode = false;
 
-const DIST_FOLDER = join(process.cwd(), 'dist/browser');
-
 // * NOTE :: leave this as require() since this file is built Dynamically from
 // webpack
 const {AppComponent, renderComponent, DomSanitizerImpl} = require('./dist/server/main');
@@ -27,7 +25,7 @@ function render(): Document {
 
 // Time X iterations.
 console.time('timer');
-for (let i = 0; i < 10000; i++) {
+for (let i = 0; i < 100000; i++) {
   const output = render().documentElement.outerHTML;
 }
 console.timeEnd('timer');
