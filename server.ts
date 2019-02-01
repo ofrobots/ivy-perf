@@ -10,8 +10,10 @@ import {getRendererFactory} from './server_renderer_factory';
 // webpack
 const {AppComponent, renderComponent, DomSanitizerImpl} = require('./dist/server/main');
 
+const MASTER_DOC: any = domino.createDocument('<app-root></app-root>');
+
 function render(): Document {
-  const doc: Document = domino.createDocument('<app-root></app-root>');
+  const doc: Document = MASTER_DOC.cloneNode(true);
   const rendererFactory = getRendererFactory(doc);
   const sanitizer = new DomSanitizerImpl(doc);
   renderComponent(AppComponent, {rendererFactory, sanitizer});
