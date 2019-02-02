@@ -1,5 +1,4 @@
 import {
-	assign,
 	toLower,
 	splice,
 	findWhere,
@@ -28,21 +27,30 @@ class Node {
 	constructor(nodeType, nodeName) {
 		this.nodeType = nodeType;
 		this.nodeName = nodeName;
-		this.childNodes = [];
+		this.childNodes = null;
+	  this.parentNode = null;
 	}
 	get nextSibling() {
-		let p = this.parentNode;
-		if (p) return p.childNodes[findWhere(p.childNodes, this, true, true) + 1];
+		const p = this.parentNode;
+		if (p === null) return;
+		const c = p.childNodes;
+		if (c === null) return;
+		return c[findWhere(c, this, true, true) + 1];
 	}
 	get previousSibling() {
-		let p = this.parentNode;
-		if (p) return p.childNodes[findWhere(p.childNodes, this, true, true) - 1];
+		const p = this.parentNode;
+		if (p === null) return;
+		const c = p.childNodes;
+		if (c === null) return;
+		return c[findWhere(c, this, true, true) - 1];
 	}
 	get firstChild() {
-		return this.childNodes[0];
+		const c = this.childNodes;
+		return c === null ? undefined : c[0];
 	}
 	get lastChild() {
-		return this.childNodes[this.childNodes.length-1];
+	  const c = this.childNodes;
+	  return c === null ? undefined : c[c.length - 1];
 	}
 	appendChild(child) {
 		this.insertBefore(child);
@@ -51,8 +59,14 @@ class Node {
 	insertBefore(child, ref) {
 		child.remove();
 		child.parentNode = this;
-		if (ref) splice(this.childNodes, ref, child, true);
-		else this.childNodes.push(child);
+		const c = this.childNodes;
+		if (c === null) {
+		  this.childNodes = [child];
+		} else if (ref) {
+		  splice(c, ref, child, true);
+		} else {
+		  c.push(child);
+		}
 		return child;
 	}
 	replaceChild(child, ref) {
@@ -67,7 +81,8 @@ class Node {
 		return child;
 	}
 	remove() {
-		if (this.parentNode) this.parentNode.removeChild(this);
+		const p = this.parentNode;
+		if (p !== null) p.removeChild(this);
 	}
 }
 
@@ -86,13 +101,28 @@ class Text extends Node {
 }
 
 function serialize(el) {
-  return el.nodeType==3 ? enc(el.nodeValue) : (
-    '<'+el.nodeName.toLowerCase() + el.attributes.map(attr).join('') + '>' +
-    el.childNodes.map(serialize).join('') + '</'+el.nodeName.toLowerCase()+'>'
-  );
+ if (el.nodeType === 3) {
+   return enc(el.nodeValue);
+ } else {
+   const nodeName = el.nodeName;
+   let s = '<' + nodeName;
+   const a = el.attributes;
+   for (let i = 0; i < a.length; ++i) {
+     s += attr(a[i]);
+   }
+   s += '>';
+   const c = el.childNodes;
+   if (c !== null) {
+    for (let i = 0; i < c.length; ++i) {
+      s += serialize(c[i]);
+    }
+   }
+   s += '</' + nodeName + '>';
+   return s;
+ }
 }
 function attr(a) {
-	return ` ${a.name}="${enc(a.value)}"`;
+  return ' ' + a.name + '="' + enc(a.value) + '"';
 }
 function enc(s) {
 	return s.replace(/[&'"<>]/g, a => `&#${a};`);
@@ -102,18 +132,19 @@ class Element extends Node {
 	constructor(nodeType, nodeName) {
 		super(nodeType || 1, nodeName);		// ELEMENT_NODE
 		this.attributes = [];
-		this.__handlers = {};
-		this.style = {};
+		//this.__handlers = null;
+		//this.style = {};
 	}
 
 	get className() { return this.getAttribute('class'); }
 	set className(val) { this.setAttribute('class', val); }
 
-	get cssText() { return this.getAttribute('style'); }
-	set cssText(val) { this.setAttribute('style', val); }
+	/*get cssText() { return this.getAttribute('style'); }
+	set cssText(val) { this.setAttribute('style', val); }*/
 
 	get children() {
-		return this.childNodes.filter(isElement);
+	  const c = this.childNodes;
+		return c === null ? [] : c.filter(isElement);
 	}
 
 	setAttribute(key, value) {
@@ -139,7 +170,7 @@ class Element extends Node {
 		splice(this.attributes, createAttributeFilter(ns, name), false, false);
 	}
 
-	addEventListener(type, handler) {
+	/*addEventListener(type, handler) {
 		(this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
 	}
 	removeEventListener(type, handler) {
@@ -159,34 +190,11 @@ class Element extends Node {
 			}
 		} while (event.bubbles && !(c && event._stop) && (t=t.parentNode));
 		return l!=null;
-	}
+	}*/
 	toString() {
 		return serialize(this);
 	}
 }
-
-
-class Document extends Element {
-	constructor() {
-		super(9, '#document');			// DOCUMENT_NODE
-	}
-
-	createElement(type) {
-		return new Element(null, String(type).toUpperCase());
-	}
-
-	createElementNS(ns, type) {
-		let element = this.createElement(type);
-		element.namespace = ns;
-		return element;
-	}
-
-
-	createTextNode(text) {
-		return new Text(text);
-	}
-}
-
 
 class Event {
 	constructor(type, opts) {
@@ -205,13 +213,44 @@ class Event {
 	}
 }
 
+class Document extends Element {
+	constructor() {
+		super(9, '#document');			// DOCUMENT_NODE
+		this.defaultView = new DefaultView(this);
+	}
+
+	get document() { return this; }
+
+	createElement(type) {
+		return new Element(null, type);
+	}
+
+	createElementNS(ns, type) {
+		let element = this.createElement(type);
+		element.namespace = ns;
+		return element;
+	}
+
+	createTextNode(text) {
+		return new Text(text);
+	}
+}
+
+
+class DefaultView {
+  constructor(document) { this.document = document; }
+}
+
+const CONSTRUCTORS = { Document, Node, Text, Element, SVGElement: Element, Event };
+Object.assign(DefaultView.prototype, CONSTRUCTORS);
+Object.assign(Document.prototype, CONSTRUCTORS);
+
 
 /** Create a minimally viable DOM Document
  *	@returns {Document} document
  */
 export default function createDocument() {
 	let document = new Document();
-	assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event });
 	document.appendChild(
 		document.documentElement = document.createElement('html')
 	);

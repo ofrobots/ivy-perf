@@ -1,7 +1,3 @@
-export function assign(obj, props) {
-	for (let i in props) obj[i] = props[i];
-}
-
 export function toLower(str) {
 	return String(str).toLowerCase();
 }
