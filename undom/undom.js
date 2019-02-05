@@ -106,9 +106,11 @@ function serialize(el) {
  } else {
    const nodeName = el.nodeName;
    let s = '<' + nodeName;
-   const a = el.attributes;
-   for (let i = 0; i < a.length; ++i) {
-     s += attr(a[i]);
+   const attributes = el.attributes;
+   if (attributes !== null) {
+     for (const [key, value] of attributes) {
+       s += ' ' + key + '="' + enc(value) + '"';
+     }
    }
    s += '>';
    const c = el.childNodes;
@@ -131,10 +133,10 @@ function enc(s) {
 class Element extends Node {
 	constructor(nodeType, nodeName) {
 		super(nodeType || 1, nodeName);		// ELEMENT_NODE
-		this.attributes = [];
+		this.attributes = null;
 		// this.__handlers = null;
 		this.eventIndex = 0;
-		this.style = {};
+		// this.style = {};
 	}
 
 	get className() { return this.getAttribute('class'); }
@@ -149,26 +151,21 @@ class Element extends Node {
 	}
 
 	setAttribute(key, value) {
-		this.setAttributeNS(null, key, value);
+		//this.setAttributeNS(null, key, value);
+		let attributes = this.attributes;
+		if (attributes === null) {
+		  this.attributes = attributes = new Map();
+		}
+		attributes.set(key, value);
 	}
 	getAttribute(key) {
-		return this.getAttributeNS(null, key);
+	  const attributes = this.attributes;
+	  if (attributes === null) return null;
+		return attributes.get(key);
 	}
 	removeAttribute(key) {
-		this.removeAttributeNS(null, key);
-	}
-
-	setAttributeNS(ns, name, value) {
-		let attr = findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
-		if (!attr) this.attributes.push(attr = { ns, name });
-		attr.value = String(value);
-	}
-	getAttributeNS(ns, name) {
-		let attr = findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
-		return attr && attr.value;
-	}
-	removeAttributeNS(ns, name) {
-		splice(this.attributes, createAttributeFilter(ns, name), false, false);
+	  const attributes = this.attributes;
+	  if (attributes !== null) attributes.delete(key);
 	}
 
 	addEventListener(type, handler) {
