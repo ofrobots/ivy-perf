@@ -7,7 +7,12 @@ const createDocument = require('./undom/undom').default;
 
 // * NOTE :: leave this as require() since this file is built Dynamically from
 // webpack
-const {AppComponent, renderComponent, DomSanitizerImpl} = require('./dist/server/main');
+const {AppComponent, TohComponent, renderComponent, DomSanitizerImpl} = require('./dist/server/main');
+
+let appComponent = TohComponent;
+if (process.argv.length > 2 && process.argv[2] === 'hw') {
+  appComponent = AppComponent;
+}
 
 function render(): Document {
   const doc: Document = createDocument();
@@ -16,7 +21,7 @@ function render(): Document {
   
   const rendererFactory = getRendererFactory(doc);
   const sanitizer = new DomSanitizerImpl(doc);
-  renderComponent(AppComponent, {rendererFactory, host, sanitizer});
+  renderComponent(appComponent, {rendererFactory, host, sanitizer});
   return doc;
 }
 

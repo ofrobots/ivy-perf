@@ -19,7 +19,7 @@
     "@angular/common": "git://github.com/angular/common-builds.git#master-ivy-aot",
     "@angular/compiler": "git://github.com/angular/compiler-builds.git#master-ivy-aot",
     "@angular/core": "git://github.com/angular/core-builds.git#master-ivy-aot",
-    "@angular/forms": "git://github.com/angular/forms-builds.git",
+    "@angular/forms": "git://github.com/angular/forms-builds.git#master-ivy-aot",
     "@angular/http": "git://github.com/angular/http-builds.git",
     "@angular/platform-browser": "git://github.com/angular/platform-browser-builds.git#master-ivy-aot",
     "@angular/platform-browser-dynamic": "git://github.com/angular/platform-browser-dynamic-builds.git#master-ivy-aot",

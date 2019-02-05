@@ -132,15 +132,16 @@ class Element extends Node {
 	constructor(nodeType, nodeName) {
 		super(nodeType || 1, nodeName);		// ELEMENT_NODE
 		this.attributes = [];
-		//this.__handlers = null;
-		//this.style = {};
+		// this.__handlers = null;
+		this.eventIndex = 0;
+		this.style = {};
 	}
 
 	get className() { return this.getAttribute('class'); }
 	set className(val) { this.setAttribute('class', val); }
 
-	/*get cssText() { return this.getAttribute('style'); }
-	set cssText(val) { this.setAttribute('style', val); }*/
+	get cssText() { return this.getAttribute('style'); }
+	set cssText(val) { this.setAttribute('style', val); }
 
 	get children() {
 	  const c = this.childNodes;
@@ -170,9 +171,17 @@ class Element extends Node {
 		splice(this.attributes, createAttributeFilter(ns, name), false, false);
 	}
 
-	/*addEventListener(type, handler) {
-		(this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
+	addEventListener(type, handler) {
+		let val = this.getAttribute('jsaction') || '';
+		if (val) {
+			val += ';';
+		}
+		let typeStr = type === 'click' ? '' : type + ':';
+		val += `${typeStr}${this.nodeName}.${this.eventIndex++}`;
+		this.setAttribute('tsaction', val);
+		// (this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
 	}
+	/*
 	removeEventListener(type, handler) {
 		splice(this.__handlers[toLower(type)], handler, false, true);
 	}
