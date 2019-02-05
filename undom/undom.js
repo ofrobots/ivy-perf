@@ -102,14 +102,14 @@ class Text extends Node {
 
 function serialize(el) {
  if (el.nodeType === 3) {
-   return enc(el.nodeValue);
+   return escape(el.nodeValue);
  } else {
    const nodeName = el.nodeName;
    let s = '<' + nodeName;
    const attributes = el.attributes;
    if (attributes !== null) {
      for (const [key, value] of attributes) {
-       s += ' ' + key + '="' + enc(value) + '"';
+       s += ' ' + key + '="' + escapeAttr(value) + '"';
      }
    }
    s += '>';
@@ -123,11 +123,47 @@ function serialize(el) {
    return s;
  }
 }
-function attr(a) {
-  return ' ' + a.name + '="' + enc(a.value) + '"';
+
+function escape(s) {
+  for (var i = 0; i < s.length; ++i) {
+    switch (s.charCodeAt(i)) {
+      case 38: // &
+      case 60: // <
+      case 62: // >
+      case 160: // non-breaking space
+        return s.replace(/[&<>\u00A0]/g, function(c) {
+          switch(c) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '\u00A0': return '&nbsp;';
+          }
+        });
+      default:
+        break;
+    }
+  }
+  return s;
 }
-function enc(s) {
-	return s.replace(/[&'"<>]/g, a => `&#${a};`);
+
+function escapeAttr(s) {
+  for (var i = 0; i < s.length; ++i) {
+    switch (s.charCodeAt(i)) {
+      case 34: // "
+      case 38: // &
+      case 160: // non-breaking space
+        return s.replace(/[&"\u00A0]/g, function(c) {
+          switch(c) {
+          case '&': return '&amp;';
+          case '"': return '&quot;';
+          case '\u00A0': return '&nbsp;';
+          }
+        });
+      default:
+        break;
+    }
+  }
+  return s;
 }
 
 class Element extends Node {
