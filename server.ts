@@ -10,15 +10,17 @@ const createDocument = require('./undom/undom').default;
 const {AppComponent, TohComponent, renderComponent, DomSanitizerImpl} = require('./dist/server/main');
 
 let appComponent = TohComponent;
-if (process.argv.length > 2 && process.argv[2] === 'hw') {
-  appComponent = AppComponent;
+if (typeof process !== 'undefined') {
+  if (process.argv.length > 2 && process.argv[2] === 'hw') {
+    appComponent = AppComponent;
+  }
 }
 
 function render(): Document {
   const doc: Document = createDocument();
   const host = doc.createElement('app-root');
   doc.body.appendChild(host);
-  
+
   const rendererFactory = getRendererFactory(doc);
   const sanitizer = new DomSanitizerImpl(doc);
   renderComponent(appComponent, {rendererFactory, host, sanitizer});
