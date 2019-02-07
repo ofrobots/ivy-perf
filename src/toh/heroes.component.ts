@@ -8,7 +8,7 @@ import { Hero } from './hero';
   <div><span>id: </span>{{hero.id}}</div>
   <div>
     <label>name:
-      <input [(ngModel)]="hero.name" placeholder="name">
+      <input (click)="onClick()" placeholder="name">
     </label>
   </div>
   `,
@@ -18,7 +18,10 @@ export class HeroesComponent implements OnInit {
     id: 1,
     name: 'Windstorm'
   };
- 
+
+  onClick() {
+  }
+
   constructor() { }
  
   ngOnInit() {
