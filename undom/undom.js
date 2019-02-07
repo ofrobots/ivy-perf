@@ -27,62 +27,61 @@ class Node {
 	constructor(nodeType, nodeName) {
 		this.nodeType = nodeType;
 		this.nodeName = nodeName;
-		this.childNodes = null;
 	  this.parentNode = null;
-	}
-	get nextSibling() {
-		const p = this.parentNode;
-		if (p === null) return;
-		const c = p.childNodes;
-		if (c === null) return;
-		return c[findWhere(c, this, true, true) + 1];
-	}
-	get previousSibling() {
-		const p = this.parentNode;
-		if (p === null) return;
-		const c = p.childNodes;
-		if (c === null) return;
-		return c[findWhere(c, this, true, true) - 1];
-	}
-	get firstChild() {
-		const c = this.childNodes;
-		return c === null ? undefined : c[0];
-	}
-	get lastChild() {
-	  const c = this.childNodes;
-	  return c === null ? undefined : c[c.length - 1];
+	  this.firstChild = null;
+	  this.lastChild = null;
+	  this.nextSibling = null;
+	  this.previousSibling = null;
 	}
 	appendChild(child) {
-		this.insertBefore(child);
+		this.insertBefore(child, null);
 		return child;
 	}
 	insertBefore(child, ref) {
 		child.remove();
 		child.parentNode = this;
-		const c = this.childNodes;
-		if (c === null) {
-		  this.childNodes = [child];
-		} else if (ref) {
-		  splice(c, ref, child, true);
+		if (this.firstChild === null) {
+		  this.firstChild = this.lastChild = child;
+    } else if (ref === null) {
+		  child.previousSibling = this.lastChild;
+		  this.lastChild.nextSibling = child;
+		  this.lastChild = child;
 		} else {
-		  c.push(child);
+		  const refPreviousSibling = ref.previousSibling;
+		  if (refPreviousSibling !== null) {
+        child.previousSibling = refPreviousSibling;
+        refPreviousSibling.nextSibling = child;
+		  } else {
+		    this.firstChild = child;
+		  }
+		  ref.previousSibling = child;
+		  child.nextSibling = ref;
 		}
 		return child;
 	}
-	replaceChild(child, ref) {
-		if (ref.parentNode===this) {
-			this.insertBefore(child, ref);
-			ref.remove();
-			return ref;
-		}
-	}
 	removeChild(child) {
-		splice(this.childNodes, child, false, true);
+	  const childNextSibling = child.nextSibling;
+	  const childPreviousSibling = child.previousSibling;
+	  if (childNextSibling !== null) {
+	    childNextSibling.previousSibling = childPreviousSibling;
+	  } else {
+	    this.lastChild = childPreviousSibling;
+	  }
+	  if (childPreviousSibling !== null) {
+	    childPreviousSibling.nextSibling = childNextSibling;
+	  } else {
+	    this.firstChild = childNextSibling;
+	  }
+	  child.parentNode = null;
+	  child.nextSibling = null;
+	  child.previousSibling = null;
 		return child;
 	}
 	remove() {
-		const p = this.parentNode;
-		if (p !== null) p.removeChild(this);
+		const parentNode = this.parentNode;
+		if (parentNode !== null) {
+		  parentNode.removeChild(this);
+    }
 	}
 }
 
@@ -90,19 +89,13 @@ class Node {
 class Text extends Node {
 	constructor(text) {
 		super(3, '#text');					// TEXT_NODE
-		this.nodeValue = text;
-	}
-	set textContent(text) {
-		this.nodeValue = text;
-	}
-	get textContent() {
-		return this.nodeValue;
+		this.textContent = text;
 	}
 }
 
 function serialize(el) {
  if (el.nodeType === 3) {
-   return escape(el.nodeValue);
+   return escape(el.textContent);
  } else {
    const nodeName = el.nodeName;
    let s = '<' + nodeName;
@@ -113,11 +106,8 @@ function serialize(el) {
      }
    }
    s += '>';
-   const c = el.childNodes;
-   if (c !== null) {
-    for (let i = 0; i < c.length; ++i) {
-      s += serialize(c[i]);
-    }
+   for (let c = el.firstChild; c !== null; c = c.nextSibling) {
+     s += serialize(c);
    }
    s += '</' + nodeName + '>';
    return s;
@@ -173,17 +163,6 @@ class Element extends Node {
 		// this.__handlers = null;
 		this.eventIndex = 0;
 		// this.style = {};
-	}
-
-	get className() { return this.getAttribute('class'); }
-	set className(val) { this.setAttribute('class', val); }
-
-	get cssText() { return this.getAttribute('style'); }
-	set cssText(val) { this.setAttribute('style', val); }
-
-	get children() {
-	  const c = this.childNodes;
-		return c === null ? [] : c.filter(isElement);
 	}
 
 	setAttribute(key, value) {
