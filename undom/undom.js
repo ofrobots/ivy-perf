@@ -144,11 +144,13 @@ function escapeAttr(s) {
   return s;
 }
 
+// TODO(bmeurer): Figure out how to do the jsaction event buffering support.
+let eventIndex = 0;
+
 class Element extends Node {
 	constructor(nodeType, nodeName) {
 		super(nodeType || 1, nodeName);		// ELEMENT_NODE
 		this.attributes = null;
-		this.eventIndex = 0;
 	}
 
 	setAttribute(key, value) {
@@ -174,7 +176,7 @@ class Element extends Node {
 			val += ';';
 		}
 		let typeStr = type === 'click' ? '' : type + ':';
-		val += `${typeStr}${this.nodeName}.${this.eventIndex++}`;
+		val += `${typeStr}${this.nodeName}.${eventIndex++}`;
 		this.setAttribute('tsaction', val);
 		// (this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
 	}
