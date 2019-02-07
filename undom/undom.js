@@ -149,7 +149,7 @@ let eventIndex = 0;
 
 class Element extends Node {
 	constructor(nodeType, nodeName) {
-		super(nodeType || 1, nodeName);		// ELEMENT_NODE
+		super(nodeType, nodeName);		// ELEMENT_NODE
 		this.attributes = null;
 	}
 
@@ -196,13 +196,7 @@ class Document extends Element {
 	get document() { return this; }
 
 	createElement(type) {
-		return new Element(null, type);
-	}
-
-	createElementNS(ns, type) {
-		let element = this.createElement(type);
-		element.namespace = ns;
-		return element;
+		return new Element(1, type);
 	}
 
 	createTextNode(text) {
