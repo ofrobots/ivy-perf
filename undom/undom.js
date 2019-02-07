@@ -11,11 +11,6 @@ const NODE_TYPES = {
 };
 */
 
-
-function isElement(node) {
-	return node.nodeType===1;
-}
-
 class Node {
 	constructor(nodeType, nodeName) {
 		this.nodeType = nodeType;
@@ -153,13 +148,10 @@ class Element extends Node {
 	constructor(nodeType, nodeName) {
 		super(nodeType || 1, nodeName);		// ELEMENT_NODE
 		this.attributes = null;
-		// this.__handlers = null;
 		this.eventIndex = 0;
-		// this.style = {};
 	}
 
 	setAttribute(key, value) {
-		//this.setAttributeNS(null, key, value);
 		let attributes = this.attributes;
 		if (attributes === null) {
 		  this.attributes = attributes = new Map();
@@ -186,51 +178,17 @@ class Element extends Node {
 		this.setAttribute('tsaction', val);
 		// (this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
 	}
-	/*
 	removeEventListener(type, handler) {
-		splice(this.__handlers[toLower(type)], handler, false, true);
+	  // TODO(bmeurer)
 	}
-	dispatchEvent(event) {
-		let t = event.target = this,
-			c = event.cancelable,
-			l, i;
-		do {
-			event.currentTarget = t;
-			l = t.__handlers && t.__handlers[toLower(event.type)];
-			if (l) for (i=l.length; i--; ) {
-				if ((l[i].call(t, event) === false || event._end) && c) {
-					event.defaultPrevented = true;
-				}
-			}
-		} while (event.bubbles && !(c && event._stop) && (t=t.parentNode));
-		return l!=null;
-	}*/
 	toString() {
 		return serialize(this);
-	}
-}
-
-class Event {
-	constructor(type, opts) {
-		this.type = type;
-		this.bubbles = !!(opts && opts.bubbles);
-		this.cancelable = !!(opts && opts.cancelable);
-	}
-	stopPropagation() {
-		this._stop = true;
-	}
-	stopImmediatePropagation() {
-		this._end = this._stop = true;
-	}
-	preventDefault() {
-		this.defaultPrevented = true;
 	}
 }
 
 class Document extends Element {
 	constructor() {
 		super(9, '#document');			// DOCUMENT_NODE
-		this.defaultView = new DefaultView(this);
 	}
 
 	get document() { return this; }
@@ -249,16 +207,6 @@ class Document extends Element {
 		return new Text(text);
 	}
 }
-
-
-class DefaultView {
-  constructor(document) { this.document = document; }
-}
-
-const CONSTRUCTORS = { Document, Node, Text, Element, SVGElement: Element, Event };
-Object.assign(DefaultView.prototype, CONSTRUCTORS);
-Object.assign(Document.prototype, CONSTRUCTORS);
-
 
 /** Create a minimally viable DOM Document
  *	@returns {Document} document
