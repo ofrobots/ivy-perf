@@ -1,10 +1,3 @@
-import {
-	toLower,
-	splice,
-	findWhere,
-	createAttributeFilter
-} from './util';
-
 /*
 const NODE_TYPES = {
 	ELEMENT_NODE: 1,
