@@ -15,11 +15,9 @@ class Node {
 	constructor(nodeType, nodeName) {
 		this.nodeType = nodeType;
 		this.nodeName = nodeName;
-	  this.parentNode = null;
-	  this.firstChild = null;
-	  this.lastChild = null;
 	  this.nextSibling = null;
 	  this.previousSibling = null;
+	  this.parentNode = null;
 	}
 	appendChild(child) {
 		this.insertBefore(child, null);
@@ -150,6 +148,8 @@ let eventIndex = 0;
 class Element extends Node {
 	constructor(nodeType, nodeName) {
 		super(nodeType, nodeName);		// ELEMENT_NODE
+	  this.firstChild = null;
+	  this.lastChild = null;
 		this.attributes = null;
 	}
 
