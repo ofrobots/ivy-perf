@@ -1,7 +1,7 @@
 ## Build
 ```
 npm install
-npm run compile:server
+npm run build:ssr
 ```
 
 ## Running
