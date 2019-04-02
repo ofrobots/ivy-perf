@@ -16,7 +16,7 @@ if (typeof process !== 'undefined') {
   }
 }
 
-function render(): Document {
+export function render(): Document {
   const doc: Document = createDocument();
   const host = doc.createElement('app-root');
   doc.body.appendChild(host);
